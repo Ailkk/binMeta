@@ -8,6 +8,14 @@
  * AM
  */
 
+/**
+ * 
+ * @author Romain Caruana
+ *
+ * Classe qui définit une matrice [n X m] booléenne en fonction de son adresse en mémoire
+ * Avec la méthode value(Data D), on remplit la matrice en parcourant l'adresse mémoire bit à bit (que l'on met dans la case de la matrice)
+ * 
+ */
 public class ColorPartition extends Objective
 {
    private int n;  // number of rows of color matrix
