@@ -22,7 +22,7 @@ public abstract class Objective
 	 * Nom de l'objectif ainsi que la valeur de la derniere evaluation
 	 */
    // protected attributes
-   protected String name;
+   protected String name; 
    protected Double lastValue = null;
 
    /**
