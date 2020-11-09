@@ -30,7 +30,7 @@ public abstract class Objective
     */
    // getter for objective name
    public String getName()
-   {
+   { 
       return this.name;
    }
 
