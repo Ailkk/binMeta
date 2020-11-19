@@ -87,7 +87,7 @@ public class RandomWalk extends binMeta
    // main
    public static void main(String[] args)
    {
-      int ITMAX = 10000;  // number of iterations
+      int ITMAX = 10000;  // Time Max
 
       // BitCounter
       int n = 50;

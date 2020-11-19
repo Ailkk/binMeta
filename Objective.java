@@ -11,6 +11,8 @@
  * 
  * @author Guibert Thomas
  *
+ *programme d'optimisation
+ *
  * Classe qui défini un Objectif d'un algo heuristique et qui affiche son evaluation si elle
  *  a été faite, elle affiche "objective was not evaluated yet" si aucune evaluation n'a ete faite 
  *  (C'est seulement la dernière evalution qui est donner, c'est la solution courante)
@@ -36,6 +38,8 @@ public abstract class Objective
 
    /**
     *Prend des possible solution de manière aléatoire
+    *
+    *Compter le nombre de bit egal a 1
     */
    // abstract method "solutionSample" (possibly a random sample)
    public abstract Data solutionSample();
