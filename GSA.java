@@ -6,46 +6,26 @@ import java.util.Random;
 public class GSA extends binMeta {
 
 	//List qui contient les data de tous les agents
-	//Un agent est dÃ©fini par sa position (x,y,z), sa masse, sa vitesse et son acceleration
-	//Donc tous les 6 Ã©lÃ©ments de la liste => un nouvel agent
-	List<Data> lesAgents;
-
-	int vitesseLumiere;
-	long masseMax;
-	static int xMax;
-
-	static int yMax;
-
-	static int zMax;
-
-	float constanteG = (float) (0.000000000066742);
+	List<Agent> listeAgents;
 
 
 	//Meilleur solution
 	Double best;
+	int nombreAgents;
 
-	//Pire solution
-	Double worst;
-
-
-	public void best() {
-		//TODO
-	}
-
-	public void worst() {
-		//TODO
-	}
 
 	//CONDITION D'ARRET POSSIBLE : 
 	//collision, out of space, nb iterations, temps execution
 
 
-	public GSA(Data data, Objective obj , long maxTime) {
+	public GSA(int start,Data data, Objective obj , long maxTime) {
 		try
 		{
 			String msg = "Impossible de creer un objet GSA : ";
 			if(maxTime <= 0) throw new Exception(msg + " Le temps d'execution max est de 0 ou est negatif");	    	  
 			this.maxTime = maxTime;
+			if(start == 0) throw new Exception(msg + " La population est inferieur ou Egal a 0");
+			this.nombreAgents =start;
 			if (data == null) throw new Exception(msg + "les data sont Null");
 			this.solution = data;
 			if(obj == null) throw new Exception(" L'objectif donner est null");
@@ -53,7 +33,9 @@ public class GSA extends binMeta {
 			this.objValue = objValue;
 			this.metaName = "Gravitational Search Algorithm";
 
+			listeAgents  = new ArrayList<Agent>();
 
+			/*
 			//Constante gravitationelle
 			constanteG = 
 
@@ -66,7 +48,7 @@ public class GSA extends binMeta {
 			//Dimension max de l'espace calculer a partie des donner entrer et de la vitesse de la lumière
 			xMax = (vitesseLumiere * xMax);
 			yMax = (vitesseLumiere * yMax);
-			zMax = (vitesseLumiere * zMax);
+			zMax = (vitesseLumiere * zMax);*/
 		}
 		catch (Exception e)
 		{
@@ -75,53 +57,13 @@ public class GSA extends binMeta {
 		}
 	}
 
+	//Crée une liste d'agent aléatoirement 
 	public void remplirListeAgents() {
-		//pour i de 2 Ã  random creer un agent
-
-		Random r = new Random();
-		//xMax * yMax * zMaz / 3
-		int maxAgents = r.nextInt(xMax * yMax * zMax / 3);
-		for(int i = 2; i < maxAgents; i++) {
-			creerAgentRandom();
+		for(int i = 0; i < nombreAgents; i++) {
+			listeAgents.add(new Agent());
 		}
 	}
 
-	public void creerAgentRandom() {
-		Random rand = new Random();
-
-		int x = rand.nextInt(xMax);
-		lesAgents.add(new Data(x));
-
-		int y = rand.nextInt(yMax);
-		lesAgents.add(new Data(y));
-
-		int z = rand.nextInt(zMax);
-		lesAgents.add(new Data(z));
-
-		//10^27 - 10^6 kg
-		long masse = Math.abs((new Random().nextLong()));
-		lesAgents.add(new Data(masse));
-
-		//entre 0 et la vitesse de la lumiÃ¨re (en km/h)
-		int vit = rand.nextInt(vitesseLumiere);
-		lesAgents.add(new Data(vit));
-
-		int acc = rand.nextInt(vitesseLumiere-vit);
-		lesAgents.add(new Data(acc));
-	}
-
-
-	//Plan de Optimize :
-
-	//algo \/
-	//initial population v
-	//main loop
-	//fitness
-	//update G, best, worst
-	//calculate M and a
-	//update velocity and pos
-	//end of the loop?
-	//return best solution
 
 
 	@Override
@@ -131,120 +73,203 @@ public class GSA extends binMeta {
 		Data D = new Data(this.solution);
 		long startime = System.currentTimeMillis();
 
-		//Remplie la site des agent avec un nombre d'agent aléatoire (en fonction de l'espace donner), les donner de chaque agents sont elle aussi générer de façon aléatoire.
+
+		//ETAPE 1
+
+
+		//Génération de la population d'agent en fonction de nombres voulus
 		remplirListeAgents();
 
-		//CONDITION D'ARRET POSSIBLE : Collition , out of Space et timeout execution
-		boolean collition = false;
-		boolean outOfSpace = false;
 
-		while ((System.currentTimeMillis() - startime < this.maxTime) && !collition && !outOfSpace){
+		List<Double> listeMasse = new ArrayList<Double>();
 
-			//Nouvelle liste avec les positions et la vitesse mise a jour
-			List<Data> AgentResultat = null;
+		//Calcule de leurs masse
+		for(int i=0; i< listeAgents.size();i++) {
+			double value = obj.value(listeAgents.get(i));
+			listeMasse.add(value);
+		}
 
-			//Evaluation des Agents avec la fonction obj de GSA donner (Soit BtCounter , Soit ColorPartition ou soit Fermat)
+		while (System.currentTimeMillis() - startime < this.maxTime){
 
-			//Pour chaque agent on applique fitness
-			Iterator listAgentForFitness = lesAgents.iterator();
-			while(listAgentForFitness.hasNext()) {
+			//Nouvelle solution générer par le flipping
+			ArrayList<Data> lD = new ArrayList<Data>(3);
 
-				//Recuperation des attributs des agents
-				int x = (int) listAgentForFitness.next();
-				int y = (int) listAgentForFitness.next();
-				int z = (int) listAgentForFitness.next();
-				long masse = (long) listAgentForFitness.next();
-				int vitesse = (int) listAgentForFitness.next();
-				int acceleration = (int) listAgentForFitness.next();
+			//ETAPE 2
 
-
-				//Calcule de fitness en fonction des agent//TODO
-				double valueFitness = obj.value(D);
-				if (this.objValue > valueFitness)
-				{
-					this.objValue = valueFitness;
-					this.solution = new Data(D);
-				}
-
-				//Mise a jour de best
-				if(objValue > best) {
-					best = objValue;
-				}
-				//Mise a jour de worst
-				if(objValue < worst) {
-					worst = objValue;
+			//Determiner la meilleurs solution (Le corps avec la masse la plus petite)
+			best = listeMasse.get(0);
+			for(int i=1; i< listeMasse.size();i++) {
+				if(listeMasse.get(i)<best) {
+					best =listeMasse.get(i);
 				}
 			}
 
+			//ETAPE 3
+			//Verification du temps (condition d'arret)
 
+			if(!(System.currentTimeMillis() - startime < this.maxTime)) {
 
-			//Mise a jour de la constante G //TODO
-
-			constanteG= constanteG; //TODO
-
-
-
-			//Calcule de la masse ? et de l'acceleration pour chaque agent 
-
-			Iterator listAgentForVelocityAndPos = lesAgents.iterator();
-			while(listAgentForVelocityAndPos.hasNext()) {
-
-				//Recuperation des attributs des agents
-				int x = (int) listAgentForVelocityAndPos.next();
-				int y = (int) listAgentForVelocityAndPos.next();
-				int z = (int) listAgentForVelocityAndPos.next();
-				long masse = (long) listAgentForVelocityAndPos.next();
-				int vitesse = (int) listAgentForVelocityAndPos.next();
-				int acceleration = (int) listAgentForVelocityAndPos.next();
-
-
-				//Calcule de M de l'agent ? //TODO
-
-
-				//Calcule de l'acceleration
-
-				acceleration = vitesse;//TODO
-
-
-
-				//Calcule des nouvelle position
-
-				x = x;//TODO
-				y = y;//TODO
-				z = z;//TODO
 				
-				//Verification de l'emplacement de l'agent dans l'espace
-				if( (x<0) || (x>xMax)) {
-					outOfSpace=true;
+				//ETAPE 4
+				//Calcule de la distance de Hamming sur les different couple de l'ensemble
+				
+				
+				for(int j=0; j< listeMasse.size()-1;j++) {
+					for(int k=j+1; k< listeMasse.size();k++) {
+						
+						//Etape 4A
+						//Calcul de la distance de Hamming entre chaque couple
+						int distanceH = listeAgents.get(j).hammingDistanceTo(listeAgents.get(k));
+						
+						//Cas ou objectif(B)<objectif(A)
+						Random r = new Random();
+						
+						//Etape 4B
+						if(listeMasse.get(k)<listeMasse.get(j)) {
+							//ETAPE 4B1
+							int hA = r.nextInt(distanceH);
+							//ETAPE 4B2
+							
+							
+							Agent newA = null;
+							
+							
+							//ETAPE 4B3
+							//La nouvelle valeur de A remplace l'ancienne
+							listeAgents.set(j, newA);
+							
+							
+						//ETAPE 4C
+						}else {
+							
+							//ETAPE 4C1
+							//Cas ou objectif(A)<objectif(B)
+							int hB = r.nextInt(distanceH);
+							
+							//ETAPE 4C2
+							Agent newB = null;
+							
+							
+							
+							//ETAPE 4C3
+							//La nouvelle valeur de B remplace l'ancienne
+							listeAgents.set(k, newB);
+							
+						}
+						
 					}
-				if( (y<0) || (y>yMax)) {
-					outOfSpace=true;
+				}
+				
+				
+				
+
+				/*
+				//Nouvelle liste avec les positions et la vitesse mise a jour
+				List<Data> AgentResultat = null;
+
+				//Evaluation des Agents avec la fonction obj de GSA donner (Soit BtCounter , Soit ColorPartition ou soit Fermat)
+
+				//Pour chaque agent on applique fitness
+				Iterator listAgentForFitness = lesAgents.iterator();
+				while(listAgentForFitness.hasNext()) {
+
+					//Recuperation des attributs des agents
+					int x = (int) listAgentForFitness.next();
+					int y = (int) listAgentForFitness.next();
+					int z = (int) listAgentForFitness.next();
+					long masse = (long) listAgentForFitness.next();
+					int vitesse = (int) listAgentForFitness.next();
+					int acceleration = (int) listAgentForFitness.next();
+
+
+					//Calcule de fitness en fonction des agent//TODO
+					double valueFitness = obj.value(D);
+					if (this.objValue > valueFitness)
+					{
+						this.objValue = valueFitness;
+						this.solution = new Data(D);
 					}
-				if( (z<0) || (z>zMax)) {
-					outOfSpace=true;
+
+					//Mise a jour de best
+					if(objValue > best) {
+						best = objValue;
 					}
-					
+					//Mise a jour de worst
+					if(objValue < worst) {
+						worst = objValue;
+					}
+				}
 
-				//Ajoute de l'agent dans la nouvelle liste
+				*/
+				/*
+				//Mise a jour de la constante G //TODO
 
-				AgentResultat.add(new Data(x));
-				AgentResultat.add(new Data(y));
-				AgentResultat.add(new Data(z));
-				AgentResultat.add(new Data(masse));
-				AgentResultat.add(new Data(vitesse));
-				AgentResultat.add(new Data(acceleration));
-			}
-
-
-
-			//La liste de base est remplacr par la nouvelle
-			lesAgents.clear();
-			lesAgents.addAll(AgentResultat);
+				constanteG= constanteG; //TODO
 
 
-			// a new solution is generated by flipping a consecutive subset of its bits
 
-			/*
+				//Calcule de la masse ? et de l'acceleration pour chaque agent 
+
+				Iterator listAgentForVelocityAndPos = lesAgents.iterator();
+				while(listAgentForVelocityAndPos.hasNext()) {
+
+					//Recuperation des attributs des agents
+					int x = (int) listAgentForVelocityAndPos.next();
+					int y = (int) listAgentForVelocityAndPos.next();
+					int z = (int) listAgentForVelocityAndPos.next();
+					long masse = (long) listAgentForVelocityAndPos.next();
+					int vitesse = (int) listAgentForVelocityAndPos.next();
+					int acceleration = (int) listAgentForVelocityAndPos.next();
+
+
+					//Calcule de M de l'agent ? //TODO
+
+
+					//Calcule de l'acceleration
+
+					acceleration = vitesse;//TODO
+
+
+
+					//Calcule des nouvelle position
+
+					x = x;//TODO
+					y = y;//TODO
+					z = z;//TODO
+
+					//Verification de l'emplacement de l'agent dans l'espace
+					if( (x<0) || (x>xMax)) {
+						outOfSpace=true;
+					}
+					if( (y<0) || (y>yMax)) {
+						outOfSpace=true;
+					}
+					if( (z<0) || (z>zMax)) {
+						outOfSpace=true;
+					}
+
+
+					//Ajoute de l'agent dans la nouvelle liste
+
+					AgentResultat.add(new Data(x));
+					AgentResultat.add(new Data(y));
+					AgentResultat.add(new Data(z));
+					AgentResultat.add(new Data(masse));
+					AgentResultat.add(new Data(vitesse));
+					AgentResultat.add(new Data(acceleration));
+				}
+
+
+
+				//La liste de base est remplacr par la nouvelle
+				lesAgents.clear();
+				lesAgents.addAll(AgentResultat);
+
+
+				*/
+				// a new solution is generated by flipping a consecutive subset of its bits
+
+				/*
 	    	 ArrayList<Data> lD = new ArrayList<Data>();
 	         int n = D.numberOfBits();
 	         int i = R.nextInt(n);
@@ -279,7 +304,17 @@ public class GSA extends binMeta {
 				this.objValue = value;
 				this.solution = new Data(D);
 			}*/
+				
+				
+			}else {
+				//Si le temps est dépasser on sort du While
+				break;
+			}
+			
+			//ETAPE 5 
+			//Boucle jusqu'a ce que la condition soit arreter
 		}
+		
 	}
 
 	// main
@@ -288,16 +323,15 @@ public class GSA extends binMeta {
 		int timeMax = 10000;  // Timer 
 
 		//Taille de l'espace défini pour l'espace de calcule
-		xMax = 400;
-		yMax = 200;
-		zMax = 800;
+
+		int NbAgent = 50;
 
 		//BitConter
 		//TODO
 		int n = 50;
 		Objective obj = new BitCounter(n);
 		Data D = obj.solutionSample();
-		GSA rw = new GSA(D,obj,timeMax);
+		GSA rw = new GSA(NbAgent,D,obj,timeMax);
 		System.out.println(rw);
 		System.out.println("starting point : " + rw.getSolution());
 		System.out.println("optimizing ...");
@@ -312,7 +346,7 @@ public class GSA extends binMeta {
 		int ndigits = 10;
 		obj = new Fermat(exp,ndigits);
 		D = obj.solutionSample();
-		rw = new GSA(D,obj,timeMax);
+		rw = new GSA(NbAgent,D,obj,timeMax);
 		System.out.println(rw);
 		System.out.println("starting point : " + rw.getSolution());
 		System.out.println("optimizing ...");
@@ -335,7 +369,7 @@ public class GSA extends binMeta {
 		n = 4;  int m = 15;
 		ColorPartition cp = new ColorPartition(n,m);
 		D = cp.solutionSample();
-		rw = new GSA(D,cp,timeMax);
+		rw = new GSA(NbAgent,D,cp,timeMax);
 		System.out.println(rw);
 		System.out.println("starting point : " + rw.getSolution());
 		System.out.println("optimizing ...");

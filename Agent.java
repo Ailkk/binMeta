@@ -1,73 +1,49 @@
+import java.util.Random;
+
 //normalement on a plus besoin de cette classe
-public class Agent {
-/*
-	// les 3 coordonnÃ©es dans un espace 3D
-	private Data x, y, z;
+public class Agent extends Data {
+
+	// les 3 coordonnées dans un espace 3D
+	private int x, y, z;
 	
-	private Data masse;
-	private Data vitesse;
-	private Data acceleration;
+	public Agent(int x, int y, int z) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
 	
-	public Agent(int x, int y, int z, int masse, int vitesse, int acceleration) {
-		
-		this.x = new Data(x);
-		this.y = new Data(y);
-		this.z = new Data(z);
-		this.masse = new Data(masse);
-		this.vitesse = new Data(vitesse);
-		this.acceleration = new Data(acceleration);
-		
+public Agent() {
+		Random r = new Random();
+		//TODO
+		int rand = r.nextInt(4000);
+		this.x = rand;
+		rand = r.nextInt(4000);
+		this.y = rand;
+		rand = r.nextInt(4000);
+		this.z = rand;
 	}
 
-	public Data getX() {
+	public int getX() {
 		return x;
 	}
 
-	public void setX(Data x) {
+	public void setX(int x) {
 		this.x = x;
 	}
 
-	public Data getY() {
+	public int getY() {
 		return y;
 	}
 
-	public void setY(Data y) {
+	public void setY(int y) {
 		this.y = y;
 	}
 
-	public Data getZ() {
+	public int getZ() {
 		return z;
 	}
 
-	public void setZ(Data z) {
+	public void setZ(int z) {
 		this.z = z;
 	}
-
-	public Data getMasse() {
-		return masse;
-	}
-
-	
-	//Pas besoin de changer la masse d'un agent
-
-	public Data getVitesse() {
-		return vitesse;
-	}
-
-	public void setVitesse(Data vitesse) {
-		this.vitesse = vitesse;
-	}
-
-	public Data getAcceleration() {
-		return acceleration;
-	}
-
-	public void setAcceleration(Data acceleration) {
-		this.acceleration = acceleration;
-	}
-	
-	
-	//TODO
-	 
-	*/
 }
