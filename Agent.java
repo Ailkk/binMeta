@@ -1,49 +1,29 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 //normalement on a plus besoin de cette classe
-public class Agent extends Data {
+public class Agent  {
+
+
 
 	// les 3 coordonnées dans un espace 3D
-	private int x, y, z;
+	private Data coord;
 	
 	public Agent(int x, int y, int z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
+		List<Data> c = new ArrayList<Data>();
+		c.add(new Data(x,0.5));
+		c.add(new Data(y,0.5));
+		c.add(new Data(z,0.5));
+		coord = new Data(c);
 	}
 	
-public Agent() {
-		Random r = new Random();
-		//TODO
-		int rand = r.nextInt(4000);
-		this.x = rand;
-		rand = r.nextInt(4000);
-		this.y = rand;
-		rand = r.nextInt(4000);
-		this.z = rand;
+
+	public Data getCoord() {
+		return coord;
 	}
 
-	public int getX() {
-		return x;
-	}
-
-	public void setX(int x) {
-		this.x = x;
-	}
-
-	public int getY() {
-		return y;
-	}
-
-	public void setY(int y) {
-		this.y = y;
-	}
-
-	public int getZ() {
-		return z;
-	}
-
-	public void setZ(int z) {
-		this.z = z;
+	public void setCoord(Data coord) {
+		this.coord = coord;
 	}
 }
