@@ -286,7 +286,7 @@ public class GSA extends binMeta {
 
 		// ColorPartition
 		//TODO
-		n = 2;  int m = nbBit*3/2;
+		n = 3*nbBit/4;  int m = 3*nbBit/6;
 		ColorPartition cp = new ColorPartition(n,m);
 		D = cp.solutionSample();
 		rw = new GSA(NbAgent,D,cp,timeMax);
