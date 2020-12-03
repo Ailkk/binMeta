@@ -10,7 +10,7 @@ public class GSA extends binMeta {
 
 	//Meilleure solution
 	Double best;
-	
+
 	int nombreAgents;
 
 	public GSA(int start,Data data, Objective obj , long maxTime) {
@@ -53,7 +53,7 @@ public class GSA extends binMeta {
 		//ETAPE 1
 		//generation de la population d'agents en fonction du nombre voulu
 		remplirListeAgents();
-		
+
 		List<Double> listeMasse = new ArrayList<Double>();
 
 		//Calcule de leurs masse
@@ -61,7 +61,7 @@ public class GSA extends binMeta {
 			double value = obj.value(listeAgents.get(i).getCoord());
 			listeMasse.add(value);
 		}
-		
+
 		//Determiner la meilleurs solution (Le corps avec la masse la plus petite)
 		best = listeMasse.get(0);
 		for(int i=1; i< listeMasse.size();i++) {
@@ -78,20 +78,20 @@ public class GSA extends binMeta {
 
 				GSAThread t = new GSAThread(listeAgents, listeMasse);
 				t.run();
-				
+
 			}else {
 				//Si le temps est depasse on sort du While
 				break;
 			}
-			
-			
+
+
 			//Mise a jour des masse calculees
 			listeMasse.clear();
 			for(int i=0; i< listeAgents.size();i++) {
 				double value = obj.value(listeAgents.get(i).getCoord());
 				listeMasse.add(value);
 			}
-			
+
 			//ETAPE 2
 			for(int i=0; i< listeMasse.size();i++) {
 				if(listeMasse.get(i)<best) {
@@ -99,14 +99,14 @@ public class GSA extends binMeta {
 					//Mise a jour de Best et de la solution
 					this.solution=new Data (listeAgents.get(i).getCoord());
 					this.objValue=best;
-					
+
 				}
 			}
-			
+
 			//ETAPE 5 
 			//Boucle jusqu'a ce que la condition soit arreter => GOTO debut du while
 		}
-		
+
 		//pour voir le nombre de fois ou l on passe dans la boucle while
 		//le nombre a double depuis le passage au multithreading
 		//environ 8000 tours dans la version sequentielle, et 18000 tous dans la version thread
@@ -118,91 +118,70 @@ public class GSA extends binMeta {
 
 		int timeMax = 10000;  // temps d'exec en ms 
 
+		//nbBits doit etre modulo 4
 		nbBits=8;
+
+		//Nombre d'agent
 		int NbAgent = 50;
 
-		//BitConter
-		//TODO
-		int n=nbBits*3;
-		Objective obj = new BitCounter(n);
-		Data D = obj.solutionSample();
-		GSA rw = new GSA(NbAgent,D,obj,timeMax);
-		System.out.println(rw);
-		System.out.println("starting point : " + rw.getSolution());
-		System.out.println("optimizing ...");
-		rw.optimize();
-		System.out.println(rw);
-		System.out.println("solution : " + rw.getSolution());
-		System.out.println();
-
-		// Fermat
-		//TODO
-		int exp = 2;
-		//int ndigits = 10;
-		int ndigits = nbBits;
-		obj = new Fermat(exp,ndigits);
-		D = obj.solutionSample();
-		rw = new GSA(NbAgent,D,obj,timeMax);
-		System.out.println(rw);
-		System.out.println("starting point : " + rw.getSolution());
-		System.out.println("optimizing ...");
-		rw.optimize();
-		System.out.println(rw);
-		System.out.println("solution : " + rw.getSolution());
-		Data x = new Data(rw.solution,0,ndigits-1);
-		Data y = new Data(rw.solution,ndigits,2*ndigits-1);
-		Data z = new Data(rw.solution,2*ndigits,3*ndigits-1);
-		System.out.print("equivalent to the equation : " + x.posLongValue() + "^" + exp + " + " + y.posLongValue() + "^" + exp);
-		if (rw.objValue == 0.0)
-			System.out.print(" == ");
-		else
-			System.out.print(" ?= ");
-		System.out.println(z.posLongValue() + "^" + exp);
-		System.out.println();
-
-		// ColorPartition
-		//TODO
-		n = 3*nbBits/4;  int m = 3*nbBits/6;
-		ColorPartition cp = new ColorPartition(n,m);
-		D = cp.solutionSample();
-		rw = new GSA(NbAgent,D,cp,timeMax);
-		System.out.println(rw);
-		System.out.println("starting point : " + rw.getSolution());
-		System.out.println("optimizing ...");
-		rw.optimize();
-		System.out.println(rw);
-		System.out.println("solution : " + rw.getSolution());
-		cp.value(rw.solution);
-		System.out.println("corresponding to the matrix :\n" + cp.show());
-	}
-	
-	
-	
-	//main test colorPartition
-	/*public static void main(String[] args) {
-		int timeMax = 5000;  // temps d'exec en ms 
-
-		nbBits=8;
-		int NbAgent = 50;
+		if(nbBits%4 == 0) {
 
 
-		int n=nbBits*3;
-		// ColorPartition
-		for(int i=0; i < 10; i++) {
-			n = 3*nbBits/4;  int m = 3*nbBits/6;
-			ColorPartition cp = new ColorPartition(n,m);
-			Data D = cp.solutionSample();
-			GSA rw = new GSA(NbAgent,D,cp,timeMax);
+			//BitConter
+			//TODO
+			int n=nbBits*3;
+			Objective obj = new BitCounter(n);
+			Data D = obj.solutionSample();
+			GSA rw = new GSA(NbAgent,D,obj,timeMax);
 			System.out.println(rw);
-			//System.out.println("starting point : " + rw.getSolution());
+			System.out.println("starting point : " + rw.getSolution());
 			System.out.println("optimizing ...");
 			rw.optimize();
-			System.out.println(rw +"\n\n-----------------------------\n");
-			//System.out.println("solution : " + rw.getSolution());
+			System.out.println(rw);
+			System.out.println("solution : " + rw.getSolution());
+			System.out.println();
+
+			// Fermat
+			//TODO
+			int exp = 2;
+			//int ndigits = 10;
+			int ndigits = nbBits;
+			obj = new Fermat(exp,ndigits);
+			D = obj.solutionSample();
+			rw = new GSA(NbAgent,D,obj,timeMax);
+			System.out.println(rw);
+			System.out.println("starting point : " + rw.getSolution());
+			System.out.println("optimizing ...");
+			rw.optimize();
+			System.out.println(rw);
+			System.out.println("solution : " + rw.getSolution());
+			Data x = new Data(rw.solution,0,ndigits-1);
+			Data y = new Data(rw.solution,ndigits,2*ndigits-1);
+			Data z = new Data(rw.solution,2*ndigits,3*ndigits-1);
+			System.out.print("equivalent to the equation : " + x.posLongValue() + "^" + exp + " + " + y.posLongValue() + "^" + exp);
+			if (rw.objValue == 0.0)
+				System.out.print(" == ");
+			else
+				System.out.print(" ?= ");
+			System.out.println(z.posLongValue() + "^" + exp);
+			System.out.println();
+
+			// ColorPartition
+			//TODO
+			int m = 3*nbBits/4;  n = 3*nbBits/m;
+			ColorPartition cp = new ColorPartition(n,m);
+			D = cp.solutionSample();
+			rw = new GSA(NbAgent,D,cp,timeMax);
+			System.out.println(rw);
+			System.out.println("starting point : " + rw.getSolution());
+			System.out.println("optimizing ...");
+			rw.optimize();
+			System.out.println(rw);
+			System.out.println("solution : " + rw.getSolution());
 			cp.value(rw.solution);
-			//System.out.println("corresponding to the matrix :\n" + cp.show());
+			System.out.println("corresponding to the matrix :\n" + cp.show());
 		}
-	}*/
+	}
 }
 
 
