@@ -224,7 +224,7 @@ public class GSA extends binMeta {
 		int timeMax = 10000;  // Temps d'exectution
 
 		//nbBits doit etre modulo 4
-		nbBits=4;
+		nbBits=8;
 		
 		//Nombre d'agent
 		int NbAgent = 50;
