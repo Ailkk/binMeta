@@ -11,12 +11,14 @@ public class GSA extends binMeta {
 
 	//Meilleur solution
 	Double best;
+	
+	//Le nombre d'agent donner
 	int nombreAgents;
 	
+	
+	static //Nombre de bit pour les possition des agents
+	int nbBits;
 
-
-	//CONDITION D'ARRET POSSIBLE : 
-	//collision, out of space, nb iterations, temps execution
 
 
 	public GSA(int start,Data data, Objective obj , long maxTime) {
@@ -61,7 +63,7 @@ public class GSA extends binMeta {
 	//Crée une liste d'agent aléatoirement 
 	public void remplirListeAgents() {
 		for(int i = 0; i < nombreAgents; i++) {
-			listeAgents.add(new Agent(8,8,8));
+			listeAgents.add(new Agent(nbBits,nbBits,nbBits));
 		}
 	}
 
@@ -96,14 +98,10 @@ public class GSA extends binMeta {
 
 	@Override
 	public void optimize() {
-
-		Random R = new Random();
-		Data D = new Data(this.solution);
+		
 		long startime = System.currentTimeMillis();
 
-
 		//ETAPE 1
-
 
 		//Génération de la population d'agent en fonction de nombres voulus
 		remplirListeAgents();
@@ -124,34 +122,19 @@ public class GSA extends binMeta {
 				best =listeMasse.get(i);
 			}
 		}
+		
+		int compteur= 0;
 		while (System.currentTimeMillis() - startime < this.maxTime){
-			
+			compteur +=1;
 			//Nouvelle solution générer par le flipping
 			ArrayList<Data> lD = new ArrayList<Data>(3);
 
-			//ETAPE 2
-
-			for(int i=0; i< listeMasse.size();i++) {
-				//System.out.println(best + "   -   "+ listeMasse.get(i));
-				if(listeMasse.get(i)<best) {
-					best =listeMasse.get(i);
-					
-					//Mise a jour de Best et de la solution
-
-					this.solution=new Data (listeAgents.get(i).getCoord());
-					this.objValue=best;
-					
-				}
-			}
-			
 			//ETAPE 3
 			//Verification du temps (condition d'arret)
 			if((System.currentTimeMillis() - startime < this.maxTime)) {
 
-				
 				//ETAPE 4
 				//Calcule de la distance de Hamming sur les different couple de l'ensemble
-				
 				
 				for(int j=0; j< listeMasse.size()-1;j++) {
 					
@@ -166,21 +149,17 @@ public class GSA extends binMeta {
 
 						//Etape 4B
 						if(listeMasse.get(k)<listeMasse.get(j)) {
+							
 							//ETAPE 4B1
 							if(distanceH<1)distanceH=1;
 							int hA = r.nextInt(distanceH) + 1;
+							
 							//ETAPE 4B2
-							
-							
-							//Data newA = fliped(listeAgents.get(j).getCoord(),listeAgents.get(k).getCoord(),hA);
-							
-							//System.out.println("hA :" + hA);
 							Data newA = listeAgents.get(j).getCoord().randomSelectInNeighbour(1,hA);
 							
 							
 							//ETAPE 4B3
 							//La nouvelle valeur de A remplace l'ancienne
-							//listeAgents.set(j, newA);
 							listeAgents.get(j).setCoord(newA);
 							
 							
@@ -193,26 +172,16 @@ public class GSA extends binMeta {
 							int hB = r.nextInt(distanceH) + 1;
 							
 							//ETAPE 4C2
-							//Agent newB = null;
-							//Data newB = fliped(listeAgents.get(k).getCoord(),listeAgents.get(j).getCoord(),hB);
-							//System.out.println("hB :" + hB);
 							Data newB = listeAgents.get(k).getCoord().randomSelectInNeighbour(1,hB);
 							
 							//ETAPE 4C3
 							//La nouvelle valeur de B remplace l'ancienne
-							//listeAgents.set(k, newB);
 							listeAgents.get(k).setCoord(newB);
 						}
 						
 					}
 				}
 				
-				//Afficher l'evolution des agent durant l'execution
-				/*for(int p=0; p<listeAgents.size();p++) {
-					System.out.println("Agent " + p + " : " + listeAgents.get(p).getCoord());
-				}*/
-				
-			
 			}else {
 				//Si le temps est dépasser on sort du While
 				break;
@@ -227,27 +196,41 @@ public class GSA extends binMeta {
 				listeMasse.add(value);
 			}
 			
+			
+			//ETAPE 2
+
+			for(int i=0; i< listeMasse.size();i++) {
+				if(listeMasse.get(i)<best) {
+					best =listeMasse.get(i);
+					//Mise a jour de Best et de la solution
+					this.solution=new Data (listeAgents.get(i).getCoord());
+					this.objValue=best;
+					
+				}
+			}
+			
 			//ETAPE 5 
 			//Boucle jusqu'a ce que la condition soit arreter
 			
 		}
+		//Nombre d'uteration de boucle faite avant l'application du multithreading
+		System.out.println("Nombre d'itération :" + compteur);
 		
 	}
 
 	// main
 	public static void main(String[] args) {
 
-		int timeMax = 10000;  // Timer 
+		int timeMax = 10000;  // Temps d'exectution
 
 		//Taille de l'espace défini pour l'espace de calcule
 
-		int nbBit=8;
+		nbBits=8;
 		int NbAgent = 50;
 
 		//BitConter
-		//TODO
 		//int n = 50;
-		int n=nbBit*3;
+		int n=nbBits*3;
 		Objective obj = new BitCounter(n);
 		Data D = obj.solutionSample();
 		GSA rw = new GSA(NbAgent,D,obj,timeMax);
@@ -260,10 +243,9 @@ public class GSA extends binMeta {
 		System.out.println();
 
 		// Fermat
-		//TODO
 		int exp = 2;
 		//int ndigits = 10;
-		int ndigits = nbBit;
+		int ndigits = nbBits;
 		obj = new Fermat(exp,ndigits);
 		D = obj.solutionSample();
 		rw = new GSA(NbAgent,D,obj,timeMax);
@@ -285,8 +267,7 @@ public class GSA extends binMeta {
 		System.out.println();
 
 		// ColorPartition
-		//TODO
-		n = 3*nbBit/4;  int m = 3*nbBit/6;
+		n = 3*nbBits/4;  int m = 3*nbBits/6;
 		ColorPartition cp = new ColorPartition(n,m);
 		D = cp.solutionSample();
 		rw = new GSA(NbAgent,D,cp,timeMax);
