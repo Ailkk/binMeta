@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class GSA extends binMeta {
 
@@ -54,48 +55,66 @@ public class GSA extends binMeta {
 		//generation de la population d'agents en fonction du nombre voulu
 		remplirListeAgents();
 
-		List<Double> listeMasse = new ArrayList<Double>();
+		//List<Double> listeMasse = new ArrayList<Double>();
 
 		//Calcule de leurs masse
-		for(int i=0; i< listeAgents.size();i++) {
+		/*for(int i=0; i< listeAgents.size();i++) {
 			double value = obj.value(listeAgents.get(i).getCoord());
 			listeMasse.add(value);
-		}
+		}*/
 
 		//Determiner la meilleurs solution (Le corps avec la masse la plus petite)
-		best = listeMasse.get(0);
-		for(int i=1; i< listeMasse.size();i++) {
-			if(listeMasse.get(i)<best) {
-				best =listeMasse.get(i);
+		best = obj.value(listeAgents.get(0).getCoord());
+		for(int i=1; i< listeAgents.size();i++) {
+			if(obj.value(listeAgents.get(i).getCoord())<best) {
+				best = obj.value(listeAgents.get(i).getCoord());
 			}
 		}
+		
 		int compteur = 0;
 		while (System.currentTimeMillis() - startime < this.maxTime){
 			compteur+=1;	
 			//ETAPE 3
 			//Verification du temps (condition d'arret)
 			if((System.currentTimeMillis() - startime < this.maxTime)) {
+				
+				int nbThreads = 3;
+				List<GSAThread> lesThreads = new ArrayList<GSAThread>();
+				for(int t = 0; t < nbThreads; t++) {
+					GSAThread thread = new GSAThread(listeAgents, this.obj, (t*(listeAgents.size()/nbThreads)) , ((t+1)*(listeAgents.size()/nbThreads)));
+					lesThreads.add(thread);
+					thread.start();
+				}
+				
+				boolean isFinished;
+				do {
+					isFinished = true;
+					for(int th = 0; th < lesThreads.size(); th++) {
+						//if(lesThreads.get(th).isAlive())
+						isFinished = (isFinished && !lesThreads.get(th).isAlive());
+					}
+					//System.out.println("pas fini");
+				}while(!isFinished);
+				
+			}
 
-				GSAThread t = new GSAThread(listeAgents, listeMasse);
-				t.run();
-
-			}else {
+			else {
 				//Si le temps est depasse on sort du While
 				break;
 			}
 
 
 			//Mise a jour des masse calculees
-			listeMasse.clear();
-			for(int i=0; i< listeAgents.size();i++) {
+			//listeMasse.clear();
+			/*for(int i=0; i< listeAgents.size();i++) {
 				double value = obj.value(listeAgents.get(i).getCoord());
 				listeMasse.add(value);
-			}
+			}*/
 
 			//ETAPE 2
-			for(int i=0; i< listeMasse.size();i++) {
-				if(listeMasse.get(i)<best) {
-					best =listeMasse.get(i);
+			for(int i=0; i< listeAgents.size();i++) {
+				if(obj.value(listeAgents.get(i).getCoord())<best) {
+					best = obj.value(listeAgents.get(i).getCoord());
 					//Mise a jour de Best et de la solution
 					this.solution=new Data (listeAgents.get(i).getCoord());
 					this.objValue=best;
@@ -108,8 +127,6 @@ public class GSA extends binMeta {
 		}
 
 		//pour voir le nombre de fois ou l on passe dans la boucle while
-		//le nombre a double depuis le passage au multithreading
-		//environ 8000 tours dans la version sequentielle, et 18000 tous dans la version thread
 		System.out.println("\nNombre de boucle : " + compteur+"\n");
 	}
 

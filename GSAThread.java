@@ -4,29 +4,28 @@ import java.util.Random;
 public class GSAThread extends Thread{
 
 	List<Agent> lesAgents;
-	List<Double> lesMasses;
+	Objective obj;
+	int debut, fin;
 	
-	public GSAThread(List<Agent> lA, List<Double>lM) {
+	public GSAThread(List<Agent> lA, Objective o, int d, int f) {
 		this.lesAgents = lA;
-		this.lesMasses = lM;
+		this.obj = o;
+		this.debut = d;
+		this.fin = f;
 	}
 	
 	@Override
 	public void run() {
-		//ETAPE 4
-		//Calcule de la distance de Hamming sur les different couple de l'ensemble
-		for(int j=0; j< lesMasses.size()-1;j++) {
+		
+		for(int j=debut; j< fin-1;j++) {
 			
-			for(int k=j+1; k< lesMasses.size();k++) {
-				
+			for(int k=j+1; k< fin;k++) {
+				Random r = new Random();
 				//Etape 4A
 				//Calcul de la distance de Hamming entre chaque couple
 				int distanceH = lesAgents.get(j).getCoord().hammingDistanceTo(lesAgents.get(k).getCoord());
-	
-				Random r = new Random();
-
 				//Etape 4B
-				if(lesMasses.get(k)<lesMasses.get(j)) {
+				if(obj.value(lesAgents.get(k).getCoord())<obj.value(lesAgents.get(j).getCoord())) {
 					//ETAPE 4B1
 					//Cas ou objectif(B)<objectif(A)
 					if(distanceH<1)distanceH=1;
@@ -55,10 +54,7 @@ public class GSAThread extends Thread{
 					//La nouvelle valeur de B remplace l'ancienne
 					lesAgents.get(k).setCoord(newB);
 				}
-				
-				
-				
 			}
-		}		
+		}
 	}
 }
