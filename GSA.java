@@ -9,12 +9,15 @@ public class GSA extends binMeta {
 
 	static int nbBits;
 
+	//meilleur soltution d'un algo
+	double SolutionBest;
+	
 	//Meilleure solution
 	Double best;
 
 	int nombreAgents;
 
-	public GSA(int start,Data data, Objective obj , long maxTime) {
+	public GSA(int start,Data data, Objective obj , long maxTime, double bestSol) {
 		try
 		{
 			String msg = "Impossible de creer un objet GSA : ";
@@ -28,6 +31,7 @@ public class GSA extends binMeta {
 			this.obj=obj;
 			this.objValue = objValue;
 			this.metaName = "Gravitational Search Algorithm";
+			this.SolutionBest = bestSol;
 
 			listeAgents  = new ArrayList<Agent>();
 		}
@@ -38,7 +42,9 @@ public class GSA extends binMeta {
 		}
 	}
 
-	//Creer une liste d'agents aleatoirement 
+	/**
+	 * Remplie la liste des agents de manière aléatoire
+	 */
 	public void remplirListeAgents() {
 		for(int i = 0; i < nombreAgents; i++) {
 			listeAgents.add(new Agent(nbBits,nbBits,nbBits));
@@ -46,6 +52,9 @@ public class GSA extends binMeta {
 	}
 
 
+	/**
+	 * Trouve la meilleur solution possible en fonction de la fonction objective
+	 */
 	@Override
 	public void optimize() {
 
@@ -54,14 +63,6 @@ public class GSA extends binMeta {
 		//ETAPE 1
 		//generation de la population d'agents en fonction du nombre voulu
 		remplirListeAgents();
-
-		//List<Double> listeMasse = new ArrayList<Double>();
-
-		//Calcule de leurs masse
-		/*for(int i=0; i< listeAgents.size();i++) {
-			double value = obj.value(listeAgents.get(i).getCoord());
-			listeMasse.add(value);
-		}*/
 
 		//Determiner la meilleurs solution (Le corps avec la masse la plus petite)
 		best = obj.value(listeAgents.get(0).getCoord());
@@ -72,12 +73,12 @@ public class GSA extends binMeta {
 		}
 		
 		int compteur = 0;
-		while (System.currentTimeMillis() - startime < this.maxTime){
+		while ((System.currentTimeMillis() - startime < this.maxTime)&& SolutionBest!=best){
 			compteur+=1;	
 			//ETAPE 3
 			//Verification du temps (condition d'arret)
 			if((System.currentTimeMillis() - startime < this.maxTime)) {
-				
+				//Création de  Thread puis on les executes
 				int nbThreads = 3;
 				List<GSAThread> lesThreads = new ArrayList<GSAThread>();
 				for(int t = 0; t < nbThreads; t++) {
@@ -90,10 +91,9 @@ public class GSA extends binMeta {
 				do {
 					isFinished = true;
 					for(int th = 0; th < lesThreads.size(); th++) {
-						//if(lesThreads.get(th).isAlive())
 						isFinished = (isFinished && !lesThreads.get(th).isAlive());
 					}
-					//System.out.println("pas fini");
+					//On attent que tout les Thread soit fini
 				}while(!isFinished);
 				
 			}
@@ -103,13 +103,6 @@ public class GSA extends binMeta {
 				break;
 			}
 
-
-			//Mise a jour des masse calculees
-			//listeMasse.clear();
-			/*for(int i=0; i< listeAgents.size();i++) {
-				double value = obj.value(listeAgents.get(i).getCoord());
-				listeMasse.add(value);
-			}*/
 
 			//ETAPE 2
 			for(int i=0; i< listeAgents.size();i++) {
@@ -130,10 +123,13 @@ public class GSA extends binMeta {
 		System.out.println("\nNombre de boucle : " + compteur+"\n");
 	}
 
-	// main
+	/**
+	 * Main de GSA, fait les calcule de GSA en utilisant les 3 fonction objective Bitecounter , fermat et colorPartition
+	 * @param args
+	 */
 	public static void main(String[] args) {
 
-		int timeMax = 10000;  // temps d'exec en ms 
+		int timeMax = 10000; // temps d'exec en ms 
 
 		//nbBits doit etre modulo 4
 		nbBits=8;
@@ -145,11 +141,12 @@ public class GSA extends binMeta {
 
 
 			//BitConter
-			//TODO
+			long startime1 = System.currentTimeMillis();
+
 			int n=nbBits*3;
 			Objective obj = new BitCounter(n);
 			Data D = obj.solutionSample();
-			GSA rw = new GSA(NbAgent,D,obj,timeMax);
+			GSA rw = new GSA(NbAgent,D,obj,timeMax,0.0);
 			System.out.println(rw);
 			System.out.println("starting point : " + rw.getSolution());
 			System.out.println("optimizing ...");
@@ -157,15 +154,20 @@ public class GSA extends binMeta {
 			System.out.println(rw);
 			System.out.println("solution : " + rw.getSolution());
 			System.out.println();
-
+			
+			System.out.println(System.currentTimeMillis() - startime1);
+			System.out.println();
+			
+			
 			// Fermat
-			//TODO
+			startime1 = System.currentTimeMillis();
+			
 			int exp = 2;
 			//int ndigits = 10;
 			int ndigits = nbBits;
 			obj = new Fermat(exp,ndigits);
 			D = obj.solutionSample();
-			rw = new GSA(NbAgent,D,obj,timeMax);
+			rw = new GSA(NbAgent,D,obj,timeMax,0.0);
 			System.out.println(rw);
 			System.out.println("starting point : " + rw.getSolution());
 			System.out.println("optimizing ...");
@@ -182,13 +184,17 @@ public class GSA extends binMeta {
 				System.out.print(" ?= ");
 			System.out.println(z.posLongValue() + "^" + exp);
 			System.out.println();
+			
+			System.out.println(System.currentTimeMillis() - startime1);
+			System.out.println();
 
 			// ColorPartition
-			//TODO
+			startime1 = System.currentTimeMillis();
+			
 			int m = 3*nbBits/4;  n = 3*nbBits/m;
 			ColorPartition cp = new ColorPartition(n,m);
 			D = cp.solutionSample();
-			rw = new GSA(NbAgent,D,cp,timeMax);
+			rw = new GSA(NbAgent,D,cp,timeMax,20.0);
 			System.out.println(rw);
 			System.out.println("starting point : " + rw.getSolution());
 			System.out.println("optimizing ...");
@@ -197,6 +203,9 @@ public class GSA extends binMeta {
 			System.out.println("solution : " + rw.getSolution());
 			cp.value(rw.solution);
 			System.out.println("corresponding to the matrix :\n" + cp.show());
+			
+			System.out.println(System.currentTimeMillis() - startime1);
+			System.out.println();
 		}
 	}
 }

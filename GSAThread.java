@@ -14,6 +14,9 @@ public class GSAThread extends Thread{
 		this.fin = f;
 	}
 	
+	/**
+	 * Lance la partie MultiThreading de GSA
+	 */
 	@Override
 	public void run() {
 		
